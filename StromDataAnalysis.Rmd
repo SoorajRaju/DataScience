@@ -1,0 +1,96 @@
+---
+title: "Analysis of impacts of different weather events in the USA"
+output: html_document
+---
+
+# 1. Introduction
+
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
+
+This project involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
+
+Storm Data is an official publication of the National Oceanic and Atmospheric Administration (NOAA) which documents:
+
+* The occurrence of storms and other significant weather phenomena having sufficient intensity to cause loss of life, injuries, significant property damage, and/or disruption to commerce. 
+* Rare, unusual, weather phenomena that generate media attention, such as snow flurries in South Florida or the San Diego coastal area. 
+* Other significant meteorological events, such as record maximum or minimum temperatures or precipitation that occur in connection with another event.  
+
+# 2. Data Processing
+
+``````{r, results='hide', message=FALSE, warning=FALSE }
+#library(R.utils)
+#library(Hmisc)
+#library(reshape)
+library(ggplot2)
+```
+
+```{r}
+if(!exists("StormDataDB"))
+{
+  if(!file.exists("./data"))
+  {
+    dir.create("./data")
+  }
+  if(!file.exists("./data/StormData.csv.bz2"))
+  {
+    fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata/data/StormData.csv.bz2"
+    destPath <- "./data/StormData.csv.bz2"
+    download.file(fileUrl, destPath)
+    dateDownloaded <- date()
+  } 
+  if(!file.exists("./data/StormData.csv"))
+    {bunzip2("./data/StormData.csv.bz2")}
+
+StormDataDB <- read.csv("./data/StormData.csv",header=TRUE)
+}
+head(StormDataDB)
+
+tidydata <- data.frame(EVTYPE=StormDataDB$EVTYPE, FATALITIES=StormDataDB$FATALITIES, INJURIES=StormDataDB$INJURIES, PROPDMG=StormDataDB$PROPDMG, PROPDMGEXP=StormDataDB$PROPDMGEXP, CROPDMG=StormDataDB$CROPDMG, CROPDMGEXP=StormDataDB$CROPDMGEXP)
+
+
+tidydata$PROPDMGEXP2 <- as.character(tidydata$PROPDMGEXP)
+tidydata$PROPDMGEXP2[(tidydata$PROPDMGEXP2 == "")] <- 0
+tidydata$PROPDMGEXP2[(tidydata$PROPDMGEXP2 == "+") | (tidydata$PROPDMGEXP2 == "-") | (tidydata$PROPDMGEXP2 == "?")] <- 1
+tidydata$PROPDMGEXP2[(tidydata$PROPDMGEXP2 == "h") | (tidydata$PROPDMGEXP2 == "H")] <- 2
+tidydata$PROPDMGEXP2[(tidydata$PROPDMGEXP2 == "k") | (tidydata$PROPDMGEXP2 == "K")] <- 3
+tidydata$PROPDMGEXP2[(tidydata$PROPDMGEXP2 == "m") | (tidydata$PROPDMGEXP2 == "M")] <- 6
+tidydata$PROPDMGEXP2[(tidydata$PROPDMGEXP2 == "B")] <- 9
+tidydata$PROPDMGEXP2 <- as.integer(tidydata$PROPDMGEXP2)
+tidydata$PROPDMG2 <- tidydata$PROPDMG * 10^tidydata$PROPDMGEXP2
+
+tidydata$CROPDMGEXP2 <- as.character(tidydata$CROPDMGEXP)
+tidydata$CROPDMGEXP2[(tidydata$CROPDMGEXP2 == "")] <- 0
+tidydata$CROPDMGEXP2[(tidydata$CROPDMGEXP2 == "+") | (tidydata$CROPDMGEXP2 == "-") | (tidydata$CROPDMGEXP2 == "?")] <- 1
+tidydata$CROPDMGEXP2[(tidydata$CROPDMGEXP2 == "h") | (tidydata$CROPDMGEXP2 == "H")] <- 2
+tidydata$CROPDMGEXP2[(tidydata$CROPDMGEXP2 == "k") | (tidydata$CROPDMGEXP2 == "K")] <- 3
+tidydata$CROPDMGEXP2[(tidydata$CROPDMGEXP2 == "m") | (tidydata$CROPDMGEXP2 == "M")] <- 6
+tidydata$CROPDMGEXP2[(tidydata$CROPDMGEXP2 == "B")] <- 9
+tidydata$CROPDMGEXP2 <- as.integer(tidydata$CROPDMGEXP2)
+tidydata$CROPDMG2 <- tidydata$CROPDMG * 10^tidydata$CROPDMGEXP2
+
+tidydata$totaldmg <- tidydata$PROPDMG2 + tidydata$CROPDMG2
+totaldata <- aggregate(cbind(FATALITIES,INJURIES,totaldmg) ~ EVTYPE, data = tidydata, sum)
+head(sort(totaldata$FATALITIES, decreasing = T))
+
+head(sort(totaldata$INJURIES, decreasing = T))
+
+head(sort(totaldata$totaldmg, decreasing = T))
+
+
+library(ggplot2)
+ggp <- ggplot(data = subset(totaldata, FATALITIES+INJURIES>quantile(FATALITIES+INJURIES,0.99)),aes(x=EVTYPE,y=(FATALITIES+INJURIES)))
+ggp + geom_bar(stat="identity") +
+        labs(x="Event Type",y="Injuries & Fatalities") + 
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+        ggtitle("Top 10 events that are most harmful to population health")
+
+library(ggplot2)
+ggp2 <- ggplot(data = subset(totaldata, totaldmg>quantile(totaldmg,0.99)),aes(x=EVTYPE,y=(totaldmg)))
+ggp2 + geom_bar(stat="identity") +
+        labs(x="Event Type",y="Damages value ($)") + 
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+        ggtitle("Top 10 events that have the greatest economic consequences")
+
+
+```
+
