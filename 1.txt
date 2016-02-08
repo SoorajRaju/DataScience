@@ -1,0 +1,23 @@
+Data: Data are values of qualitative or quantitative variables, belonging to a set of items.
+Good data science comes from good questions, not from fancy techniques
+Types of Questions in Data Science 
+	1) Descriptive Analysis         --> Describe a set of data. e.g. Census, Ngram viewer
+	2) Exploratory Analysis         --> Find relationships you don't know. Discover new stuffs.
+	3) Inferential Analysis          --> Use a small amount of data to say something about a bigger population.
+	4) Predictive Analysis           --> To use the data on the some objects to predict values for another object.
+	5) Causal Analysis                --> To find out what happens to y when x changes
+	6) Mechanistic Analysis        --> Understand exact changes in variables that leads to changes in other variables for individual objects.
+	• Data is the second most important thing. But having data can't save you if you don't have a question.
+	• Understand the confounding variable. Correlation is not causation.
+Experimentation Possibilities
+	• Fix a variable
+	• Stratify variables so that all have equal chance
+	• Randomize it
+Experiments should have replication, Measure variability, Generalize a problem that you care about and are transparent.
+Each observation of an experiment is a separate row and each variable associated with an experiment is separate row.
+
+Prediction and Inference: Prediction is not inference
+     
+Prediction
+	• Sensitivity, Specificity, Positive Predictive Value, Negative Predictive Value, Accuracy.
+Avoid Data Dredging
