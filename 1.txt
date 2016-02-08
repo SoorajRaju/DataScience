@@ -14,7 +14,7 @@ Experimentation Possibilities
 	• Stratify variables so that all have equal chance
 	• Randomize it
 Experiments should have replication, Measure variability, Generalize a problem that you care about and are transparent.
-Each observation of an experiment is a separate row and each variable associated with an experiment is separate row.
+Each observation of an experiment is a separate row and each variable associated with an experiment is separate column.
 
 Prediction and Inference: Prediction is not inference
      
